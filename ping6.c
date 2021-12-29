@@ -33,52 +33,52 @@
 
 char * pr_addr(void *sa, socklen_t salen)
 {
-	static char buffer[4096] = "";
-	static struct sockaddr_storage last_sa = { 0 };
-	static socklen_t last_salen = 0;
+    static char buffer[4096] = "";
+    static struct sockaddr_storage last_sa = { 0 };
+    static socklen_t last_salen = 0;
     char address[128];
 
-	if (salen == last_salen && !memcmp(sa, &last_sa, salen))
-		return buffer;
+    if (salen == last_salen && !memcmp(sa, &last_sa, salen))
+        return buffer;
 
-	memcpy(&last_sa, sa, (last_salen = salen));
-	getnameinfo(sa, salen, address, sizeof address, NULL, 0, NI_NUMERICHOST);
+    memcpy(&last_sa, sa, (last_salen = salen));
+    getnameinfo(sa, salen, address, sizeof address, NULL, 0, NI_NUMERICHOST);
     snprintf(buffer, sizeof buffer, "%s", address);
 
-	return(buffer);
+    return(buffer);
 }
 
 
 unsigned short
 in_cksum(const unsigned short *addr, register int len, unsigned short csum)
 {
-	register int nleft = len;
-	const unsigned short *w = addr;
-	register unsigned short answer;
-	register int sum = csum;
+    register int nleft = len;
+    const unsigned short *w = addr;
+    register unsigned short answer;
+    register int sum = csum;
 
-	/*
-	 *  Our algorithm is simple, using a 32 bit accumulator (sum),
-	 *  we add sequential 16 bit words to it, and at the end, fold
-	 *  back all the carry bits from the top 16 bits into the lower
-	 *  16 bits.
-	 */
-	while (nleft > 1)  {
-		sum += *w++;
-		nleft -= 2;
-	}
+    /*
+     *  Our algorithm is simple, using a 32 bit accumulator (sum),
+     *  we add sequential 16 bit words to it, and at the end, fold
+     *  back all the carry bits from the top 16 bits into the lower
+     *  16 bits.
+     */
+    while (nleft > 1)  {
+        sum += *w++;
+        nleft -= 2;
+    }
 
-	/* mop up an odd byte, if necessary */
-	if (nleft == 1)
-		sum += ODDBYTE(*(unsigned char *)w); /* le16toh() may be unavailable on old systems */
+    /* mop up an odd byte, if necessary */
+    if (nleft == 1)
+        sum += ODDBYTE(*(unsigned char *)w); /* le16toh() may be unavailable on old systems */
 
-	/*
-	 * add back carry outs from top 16 bits to low 16 bits
-	 */
-	sum = (sum >> 16) + (sum & 0xffff);	/* add hi 16 to low 16 */
-	sum += (sum >> 16);			/* add carry */
-	answer = ~sum;				/* truncate to 16 bits */
-	return (answer);
+    /*
+     * add back carry outs from top 16 bits to low 16 bits
+     */
+    sum = (sum >> 16) + (sum & 0xffff);	/* add hi 16 to low 16 */
+    sum += (sum >> 16);			/* add carry */
+    answer = ~sum;				/* truncate to 16 bits */
+    return (answer);
 }
 
 /*
@@ -214,10 +214,10 @@ int main(int argc, char **argv) {
     int ntransmitted = 0;
 
     int packlen = datalen + MAXIPLEN + MAXICMPLEN;
-	if (!(packet = (unsigned char *)malloc((unsigned int)packlen))) {
-		fprintf(stderr, "ping: out of memory.\n");
-		exit(2);
-	}
+    if (!(packet = (unsigned char *)malloc((unsigned int)packlen))) {
+        fprintf(stderr, "ping: out of memory.\n");
+        exit(2);
+    }
     icp = (struct icmphdr *)packet;
     int cc = build_echo(packet, packlen);
     
@@ -229,7 +229,7 @@ int main(int argc, char **argv) {
 
     /* compute ICMP checksum here */
 /*    int cc = datalen + 8;
-	icp->checksum = in_cksum((unsigned short *)icp, cc, 0);
+      icp->checksum = in_cksum((unsigned short *)icp, cc, 0);
 */
     /* send the ICMP packet*/
     int i = sendto(sock, icp, cc, 0, (struct sockaddr*)&dst, sizeof(dst));
@@ -269,7 +269,7 @@ int main(int argc, char **argv) {
      * to pass msg here
      * TLDR: passing msg here allows us to check the source
      * address for the unconnected socket, sock
-    */
+     */
     cc = recvmsg(sock, &msg, polling);
     if (cc  < 0 ){
         perror("Error in recvmsg");
@@ -301,9 +301,9 @@ int main(int argc, char **argv) {
 
     struct sockaddr_in6 *from = msg.msg_name;
     if (icmph->icmp6_type == ICMP6_ECHO_REPLY) {
-           printf("%s\n", pr_addr(from, sizeof *from));
-           printf("Reply of %d bytes received\n", cc);
-           printf("icmp_code = %u\n", icmph->icmp6_code);
+        printf("%s\n", pr_addr(from, sizeof *from));
+        printf("Reply of %d bytes received\n", cc);
+        printf("icmp_code = %u\n", icmph->icmp6_code);
     } else {
         printf("Not a ICMP_ECHOREPLY\n");
         printf("Not a ICMP6_ECHO_REPLY: got type: %d", icmph->icmp6_type);
